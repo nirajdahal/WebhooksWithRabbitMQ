@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace AirlineWeb.Controllers
 {
+    [ApiController]
     [Route("api/flight")]
     public class FlightController : ControllerBase
     {
