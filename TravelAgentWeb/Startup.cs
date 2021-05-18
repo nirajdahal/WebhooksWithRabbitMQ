@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TravelAgentWeb.Extensions;
 
 namespace TravelAgentWeb
 {
@@ -32,6 +33,9 @@ namespace TravelAgentWeb
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TravelAgentWeb", Version = "v1" });
             });
+            services.ConfigureCors();
+            services.ConureSqlContextfig(Configuration);
+            services.AddAutoMapper(typeof(Startup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,7 +49,7 @@ namespace TravelAgentWeb
             }
 
             app.UseHttpsRedirection();
-
+            app.UseCors("CorsPolicy");
             app.UseRouting();
 
             app.UseAuthorization();
