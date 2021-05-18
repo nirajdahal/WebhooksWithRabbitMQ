@@ -1,4 +1,5 @@
 using AirlineWeb.Extensions;
+using AirlineWeb.MessageBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -30,7 +31,7 @@ namespace AirlineWeb
             services.ConfigureCors();
             services.ConureSqlContextfig(Configuration);
             services.AddAutoMapper(typeof(Startup));
-
+            services.AddSingleton<IMessageBusClient, MessageBusClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,11 +1,11 @@
 ﻿using AirlineWeb.Data;
 using AirlineWeb.Dtos;
+using AirlineWeb.MessageBus;
 using AirlineWeb.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,15 +15,17 @@ namespace AirlineWeb.Controllers
     [Route("api/flight")]
     public class FlightController : ControllerBase
     {
-        RepositoryContext _repo;
-        IMapper _mapper;
-        public FlightController(RepositoryContext repo, IMapper mapper)
+        private readonly RepositoryContext _repo;
+        private readonly IMapper _mapper;
+        private readonly IMessageBusClient _messageBusClient;
+        public FlightController(RepositoryContext repo, IMapper mapper, IMessageBusClient messageBusClient)
         {
             _repo = repo;
             _mapper = mapper;
+            _messageBusClient = messageBusClient;
         }
         [HttpGet("{flightId}", Name = "GetFlight")]
-        public async  Task<IActionResult> GetFlight(Guid flightId)
+        public async Task<IActionResult> GetFlight(Guid flightId)
         {
             try
             {
@@ -39,22 +41,22 @@ namespace AirlineWeb.Controllers
             {
                 Console.WriteLine(ex);
                 return StatusCode(500);
-               
+
             }
-            
+
         }
-    
+
         [HttpPost]
         public async Task<IActionResult> CreateFlight([FromBody] FlightDetailCreationDto flightToCreate)
         {
-                if(flightToCreate == null)
+            if (flightToCreate == null)
             {
                 return BadRequest("The object sent to the create file is null");
             }
 
             var flightExist = await _repo.FlightDetailS.Where(x => x.FlightCode == flightToCreate.FlightCode).SingleOrDefaultAsync();
 
-            if(flightExist != null)
+            if (flightExist != null)
             {
                 return StatusCode(409, "FlightDetail Already Exist");
             }
@@ -66,8 +68,8 @@ namespace AirlineWeb.Controllers
             var flightToReturn = _mapper.Map<FlightDetail>(flight);
             return StatusCode(201, "The flight deatil has been created");
         }
-    
-        [HttpPost("{flightId}")]
+
+        [HttpPut("{flightId}")]
 
         public async Task<IActionResult> UpdateFlight(Guid flightId, [FromBody] FlightDetailForUpdateDto flightToUpdate)
         {
@@ -76,18 +78,29 @@ namespace AirlineWeb.Controllers
             {
                 return NotFound("Flight Id Doesnot Exist");
             }
-            var flightToReturn = _mapper.Map<FlightDetail>(flight);
+            
 
             var oldPrice = flight.Price;
             var newPrice = flightToUpdate.Price;
-            if(oldPrice == newPrice)
+            if (oldPrice == newPrice)
             {
                 return BadRequest("The old price and new price is same");
             }
 
+
             var flightUpdate = _mapper.Map<FlightDetail>(flightToUpdate);
             _repo.FlightDetailS.Update(flightUpdate);
             await _repo.SaveChangesAsync();
+
+
+            NotificationMessageDto notificationMessageDto = new NotificationMessageDto()
+            {
+                FlightCode = flightUpdate.FlightCode,
+                WebhookType = "PriceChange",
+                OldPrice = oldPrice,
+                NewPrice = newPrice
+            };
+            _messageBusClient.SendMessage(notificationMessageDto);
             return NoContent();
         }
 
