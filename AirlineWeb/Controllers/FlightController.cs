@@ -88,14 +88,14 @@ namespace AirlineWeb.Controllers
             }
 
 
-            var flightUpdate = _mapper.Map<FlightDetail>(flightToUpdate);
-            _repo.FlightDetailS.Update(flightUpdate);
+            _mapper.Map(flightToUpdate, flight);
+            _repo.FlightDetailS.Update(flight);
             await _repo.SaveChangesAsync();
 
 
             NotificationMessageDto notificationMessageDto = new NotificationMessageDto()
             {
-                FlightCode = flightUpdate.FlightCode,
+                FlightCode = flight.FlightCode,
                 WebhookType = "PriceChange",
                 OldPrice = oldPrice,
                 NewPrice = newPrice

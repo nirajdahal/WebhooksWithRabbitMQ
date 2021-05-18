@@ -15,6 +15,7 @@ namespace AirlineWeb.Profiles
             CreateMap<FlightDetailCreationDto, FlightDetail>();
             CreateMap<FlightDetail, FlightDetailDto>();
             CreateMap<FlightDetailForUpdateDto, FlightDetail>();
+            CreateMap<FlightDetail, FlightDetailForUpdateDto>();
         }
     }
 }
