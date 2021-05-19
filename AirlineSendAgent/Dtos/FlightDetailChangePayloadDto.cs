@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace TravelAgentWeb.Dtos
+namespace AirlineSendAgent.Dtos
 {
-    public class FlightDetailUpdateDto
+    public class FlightDetailChangePayloadDto
     {
         public string WebhookURI { get; set; }
         public string Publisher { get; set; }
